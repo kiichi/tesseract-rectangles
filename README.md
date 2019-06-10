@@ -13,4 +13,4 @@ live-server
 ```
 3. Check the console.
 
-https://raw.githubusercontent.com/kiichi/tesseract-rectangles/master/screenshot.jpg
+![](https://raw.githubusercontent.com/kiichi/tesseract-rectangles/master/screenshot.jpg)
