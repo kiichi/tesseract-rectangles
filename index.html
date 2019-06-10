@@ -1,0 +1,79 @@
+<html>
+	<head>
+		<title>Crop and batch process test</title>
+		<style>
+			canvas { border: dotted gray 2px; margin:20px;}
+		</style>
+	<body>
+		<canvas id="src"></canvas>
+		<canvas id="dest"></canvas>
+		Image from http://www.caremanagerpro.com/SiteDemo/demographics.htm
+		<br/>
+		See the console for the results
+		<script src='https://unpkg.com/tesseract.js@v2.0.0-alpha.10/dist/tesseract.min.js'></script>
+		<script>
+		var ocrJson = {
+			// todo: other parameters. b&w, resizing strategy etc
+			"version":"1.0.0",
+			"schema":"My OCR Meta JSON",
+			"rectangles":[
+				{"left":70,"top":95,"width":130,"height":15,"label":"PatientName"},
+				{"left":70,"top":110,"width":230,"height":15,"label":"Address"},
+				{"left":140,"top":135,"width":150,"height":15,"label":"DOS"},
+			],
+		};
+
+		async function loadImage(url) {
+		  return new Promise(r => { let i = new Image(); i.onload = (() => r(i)); i.src = url; });
+		}
+
+		// todo, add parameters and change sourceImage to ImageData (getImageData from other canvas)
+		function cropImage(sourceImage, rect){
+			// parameterize them
+			var left = rect.left;
+			var top =  rect.top;
+			var	width = rect.width;
+			var height = rect.height;
+				
+			var cropCanvas = document.createElement('canvas');
+			cropCanvas.width = width;
+			cropCanvas.height = height;
+			
+			var context = cropCanvas.getContext('2d');
+			context.drawImage(sourceImage, left, top, width, height, 0, 0, width, height);
+			return cropCanvas;
+		}
+
+		async function init(){
+			console.log(ocrJson);
+			const worker = new Tesseract.TesseractWorker();
+			var srcContext = document.getElementById('src').getContext('2d');
+			var destContext = document.getElementById('dest').getContext('2d');
+			let img = await loadImage('example.jpg');
+			srcContext.drawImage(img, 0, 0);
+
+			for (var i=0; i<ocrJson.rectangles.length; i++){
+				var rect = ocrJson.rectangles[i];
+				var cropImgCanvas = cropImage(img,rect);
+
+				// just renderint to visualize - no need for actual crop
+				destContext.drawImage(cropImgCanvas,rect.left,rect.top);
+				srcContext.rect(rect.left,rect.top, rect.width, rect.height);
+				srcContext.strokeStyle = "#FF0000";
+				srcContext.stroke();
+
+				// todo: pass the rect info and promise them all?
+				worker.recognize(cropImgCanvas)
+					  .progress(progress => {
+						//console.log('progress:', progress);
+					  }).then(result => {
+						console.log('result:', result.text);
+					  });
+			}
+		}
+
+		document.body.onload = init;
+		</script>
+	</head>
+	</body>
+</html>
