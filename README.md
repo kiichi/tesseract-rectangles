@@ -1,5 +1,5 @@
 # tesseract-rectangles
-Simple tesseract and multiple rectangle cropping example.
+Simple tesseract and multiple rectangle cropping example. In this source code, i'm simply defining 3 rectangles and cropping them, and finally extracting text with OCR.
 
 # How to run
 
